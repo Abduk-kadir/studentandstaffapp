@@ -3,14 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { Formik, Field, ErrorMessage, Form as FormikForm } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import '../assets/css/loginPage.css';
 import axios from 'axios';
 import baseUrl from '../utils/baseUrl';
-import { useDispatch } from 'react-redux';
-import { setRegistrationNo } from '../redux/slices/registrationNo';
-import { getPersonalInformationForm } from '../redux/slices/dynamicForm/personalInfoFormSlice';
+
+
 import { getFCMToken } from '../services/fcmService';
 
 const loginSchema = Yup.object().shape({
@@ -18,7 +17,7 @@ const loginSchema = Yup.object().shape({
     .email('Please enter a valid email')
     .required('Email / Username is required'),
   password: Yup.string()
-    .min(6, 'Password must be at least 6 characters')
+    .min(5, 'Password must be at least 5 characters')
     .required('Password is required'),
   academicYear: Yup.string()
     .required('Please select an academic year'),
@@ -30,15 +29,44 @@ const loginSchema = Yup.object().shape({
 const LoginPage = () => {
   const navigate = useNavigate();
   const [fcmToken, setFcmToken] = useState(null);
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(getPersonalInformationForm({}));
-  }, [dispatch]);
-
+  const [searchParams]=useSearchParams()
+  
+ 
   useEffect(() => {
     getFCMToken().then(setFcmToken);
   }, []);
+
+  //for fully login use effect
+  useEffect(() => {
+    const email = searchParams.get('email');
+    const password = searchParams.get('password');
+    const token = searchParams.get('fcmToken') || fcmToken;
+    const userRole = searchParams.get('userRole');
+    if(!email || !password ||!userRole) return;
+   
+    const forceLogin = async () => {
+      try {
+       
+       if(userRole=='Teacher'){
+        
+        const res = await axios.post(`${baseUrl}/api/staff/login`, {
+        email,
+        password,
+        fcmToken: token,
+       });
+        localStorage.setItem('token', res?.data?.token);
+        navigate('/staffdashboard');
+       }
+        
+      } catch (err) {
+        console.error('Auto-login failed', err);
+        alert(err?.response?.data?.message || 'Auto-login failed');
+      }
+    };
+
+    forceLogin();
+  }, []);
+
 
   const loginParent = async (values) => {
     let permanentRecords = [];
@@ -67,33 +95,10 @@ const LoginPage = () => {
       localStorage.setItem('token', data?.token);
       localStorage.setItem('reg_no', data?.reg_no);
       alert('Login successfully');
-      navigate(`/studentdashboard?reg_no=${data?.reg_no}`);
+      navigate(`/studentdashboard`);
       return;
     }
-
-    const allRes = await axios.post(`${baseUrl}/api/personal-information/all`, {
-      email: values.email,
-    });
-    const students = allRes.data?.data ?? [];
-
-    if (students.length === 0) {
-      alert('No student found for this email');
-      return;
-    }
-
-    const reg_no = students[0]?.reg_no;
-    const { data } = await axios.post(`${baseUrl}/api/personal-information/login`, {
-      email: values.email,
-      reg_no,
-      password: values.password,
-      fcmToken,
-    });
-
-    localStorage.setItem('token', data?.token);
-    localStorage.setItem('reg_no', data?.reg_no);
-    dispatch(setRegistrationNo({ reg_no: data?.reg_no }));
-    alert('Login successfully');
-    navigate(`/studentdashboard?reg_no=${data?.reg_no}`);
+    
   };
 
   return (

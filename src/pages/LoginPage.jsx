@@ -42,11 +42,11 @@ const LoginPage = () => {
     const password = searchParams.get('password');
     const token = searchParams.get('fcmToken') || fcmToken;
     const userRole = searchParams.get('userRole');
+    const reg_no=searchParams.get('reg_no')
     if(!email || !password ||!userRole) return;
    
     const forceLogin = async () => {
       try {
-       
        if(userRole=='Teacher'){
         
         const res = await axios.post(`${baseUrl}/api/staff/login`, {
@@ -56,6 +56,22 @@ const LoginPage = () => {
        });
         localStorage.setItem('token', res?.data?.token);
         navigate('/staffdashboard');
+       }
+       if(userRole=="Parent"){
+        const { data } = await axios.post(
+          `${baseUrl}/api/parmanent-personal-information/login`,
+          {
+            email: values.email,
+            password: values.password,
+            reg_no,
+            fcmToken,
+          }
+        );
+  
+        localStorage.setItem('token', data?.token);
+        localStorage.setItem('reg_no', data?.reg_no);
+        alert('Login successfully');
+        navigate(`/studentdashboard`);
        }
         
       } catch (err) {

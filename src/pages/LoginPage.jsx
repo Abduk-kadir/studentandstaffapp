@@ -61,10 +61,10 @@ const LoginPage = () => {
         const { data } = await axios.post(
           `${baseUrl}/api/parmanent-personal-information/login`,
           {
-            email: values.email,
-            password: values.password,
-            reg_no,
-            fcmToken,
+            email:email,
+            password: password,
+            reg_no:reg_no,
+            fcmToken:token,
           }
         );
   

@@ -70,7 +70,7 @@ const LoginPage = () => {
   
         localStorage.setItem('token', data?.token);
         localStorage.setItem('reg_no', data?.reg_no);
-        alert('Login successfully');
+       
         navigate(`/studentdashboard`);
        }
         

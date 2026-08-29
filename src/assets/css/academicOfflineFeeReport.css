@@ -1261,3 +1261,220 @@
   background: linear-gradient(135deg, #007aff, #5ac8fa) !important;
   box-shadow: 0 6px 14px rgba(0, 122, 255, 0.18);
 }
+
+/* ---------- Mobile infinite-scroll cards (AllTypeNotficationDataTable) ---------- */
+.fee-report-scope .report-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fee-report-scope .report-mobile-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fee-report-scope .report-mobile-card {
+  position: relative;
+  border: 1px solid var(--sd-border, rgba(60, 60, 67, 0.12));
+  border-radius: var(--sd-radius-sm, 16px);
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fee-report-scope .report-mobile-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #007aff, #5ac8fa);
+  opacity: 0.9;
+}
+
+.fee-report-scope .report-mobile-card:active {
+  transform: scale(0.992);
+}
+
+.fee-report-scope .report-mobile-card__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 16px 8px;
+}
+
+.fee-report-scope .report-mobile-row {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0;
+  align-items: start;
+  padding: 0;
+  border: none;
+}
+
+.fee-report-scope .report-mobile-row__label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #007aff;
+  line-height: 1.45;
+  padding-top: 1px;
+  white-space: nowrap;
+  padding-right: 2px;
+}
+
+.fee-report-scope .report-mobile-row__value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sd-text, #111114);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.fee-report-scope .report-mobile-card__message-wrap {
+  margin: 0 16px 14px;
+}
+
+.fee-report-scope .report-mobile-card__message-label {
+  display: block;
+  margin: 0 0 6px;
+  padding: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #007aff;
+  text-align: left;
+}
+
+.fee-report-scope .report-mobile-card__message-box {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.65) 0%, rgba(241, 245, 249, 0.9) 100%);
+  border: 1px solid rgba(0, 122, 255, 0.12);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--sd-text, #111114);
+  text-align: left;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.fee-report-scope .report-mobile-card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.fee-report-scope .report-mobile-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.fee-report-scope .report-mobile-action--view {
+  color: #0369a1;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border-color: rgba(14, 165, 233, 0.2);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.12);
+}
+
+.fee-report-scope .report-mobile-action--download {
+  color: #047857;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-color: rgba(16, 185, 129, 0.22);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+}
+
+.fee-report-scope .report-mobile-action:active {
+  transform: translateY(1px);
+}
+
+.fee-report-scope .report-mobile-sentinel {
+  height: 1px;
+  width: 100%;
+}
+
+.fee-report-scope .report-mobile-loading,
+.fee-report-scope .report-mobile-end,
+.fee-report-scope .report-mobile-empty,
+.fee-report-scope .report-mobile-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--sd-text-secondary, rgba(60, 60, 67, 0.65));
+  padding: 10px 4px;
+}
+
+.fee-report-scope .report-mobile-empty {
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 12px;
+  border-radius: 16px;
+  border: 1px dashed rgba(0, 122, 255, 0.25);
+  background: rgba(239, 246, 255, 0.55);
+}
+
+.fee-report-scope .report-mobile-empty__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0369a1;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+}
+
+.fee-report-scope .report-mobile-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 122, 255, 0.2);
+  border-top-color: #007aff;
+  animation: report-mobile-spin 0.7s linear infinite;
+}
+
+@keyframes report-mobile-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fee-report-scope .report-mobile-error {
+  color: #b91c1c;
+  flex-direction: column;
+}
+
+.staff-dashboard .fee-report-scope .report-mobile-card {
+  border-color: var(--sd-border, rgba(60, 60, 67, 0.12));
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.staff-dashboard .fee-report-scope .report-mobile-row__value {
+  color: var(--sd-text, #111114);
+}
+
+.staff-dashboard .fee-report-scope .report-mobile-action--view {
+  color: #0369a1;
+}

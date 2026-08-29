@@ -9,7 +9,23 @@ const NotificationReportPage = () => {
     { data: "class_name", title: "Class" },
     { data: "division_name", title: "Division" },
     { data: "message", title: "Message" },
-    {data:"staff_name",title:"Teacher", defaultContent:""},
+    { data: "staff_name", title: "Teacher", defaultContent: "" },
+    {
+      data: "created_at",
+      title: "Date",
+      defaultContent: "",
+      render: (data, type, row) => {
+        const raw = data || row?.created_at || row?.createdAt;
+        if (!raw) return "";
+        const date = new Date(raw);
+        if (Number.isNaN(date.getTime())) return "";
+        return date.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+      },
+    },
     {
       data: null,
       title: "Actions",

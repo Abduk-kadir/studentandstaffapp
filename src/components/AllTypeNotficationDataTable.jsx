@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import $ from "jquery";
 import "datatables.net-dt";
 import axios from "axios";
@@ -9,14 +9,43 @@ import "../assets/css/academicOfflineFeeReport.css";
 import DocumentViewer from "./child/DocumentViewer";
 import { downloadFile } from "../utils/downloadFile";
 
+const PAGE_SIZE = 10;
+const MOBILE_MQ = "(max-width: 767.98px)";
+
 const buildFileUrl = (path) => {
   if (!path) return "";
   return path.startsWith("http") ? path : `${baseURL}${path}`;
 };
 
+const getDocumentUrl = (row) =>
+  row?.diary_url ||
+  row?.notes_url ||
+  row?.assignment_url ||
+  row?.timetable_url ||
+  row?.document_url ||
+  "";
+
+const formatCardValue = (field, row) => {
+  const raw = row?.[field.data];
+  if (raw == null || raw === "") return "";
+  if (typeof field.render === "function") {
+    const rendered = field.render(raw, "display", row);
+    if (rendered == null) return "";
+    return typeof rendered === "string" ? rendered : String(raw);
+  }
+  return String(raw);
+};
+
 const AllTypeNotficationDataTable = ({ url, columns }) => {
   const tableRef = useRef(null);
   const datatableRef = useRef(null);
+  const sentinelRef = useRef(null);
+  const mobileLoadLockRef = useRef(false);
+
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia(MOBILE_MQ).matches : false
+  );
+
   const [classes, setClasses] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [batches, setBatches] = useState([]);
@@ -28,12 +57,27 @@ const AllTypeNotficationDataTable = ({ url, columns }) => {
   const [divisionFilter, setDivisionFilter] = useState("");
   const [viewUrl, setViewUrl] = useState(null);
 
+  const [mobileItems, setMobileItems] = useState([]);
+  const [mobileStart, setMobileStart] = useState(0);
+  const [mobileHasMore, setMobileHasMore] = useState(true);
+  const [mobileLoading, setMobileLoading] = useState(false);
+  const [mobileError, setMobileError] = useState("");
+  const [mobileFilterTick, setMobileFilterTick] = useState(0);
+
   const classFilterRef = useRef("");
   const fromDateRef = useRef("");
   const toDateRef = useRef("");
   const batchFilterRef = useRef("");
   const divisionFilterRef = useRef("");
   const setViewUrlRef = useRef(setViewUrl);
+
+  const cardFields = useMemo(
+    () =>
+      (columns || []).filter(
+        (col) => col?.data && col.data !== "id" && typeof col.data === "string"
+      ),
+    [columns]
+  );
 
   useEffect(() => {
     setViewUrlRef.current = setViewUrl;
@@ -60,13 +104,22 @@ const AllTypeNotficationDataTable = ({ url, columns }) => {
   }, [divisionFilter]);
 
   useEffect(() => {
+    const mq = window.matchMedia(MOBILE_MQ);
+    const onChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mq.matches);
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else mq.addListener(onChange);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
+      else mq.removeListener(onChange);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
-        const [res1, res2, res3] = await Promise.all([
-          axios.get(`${baseURL}/api/batches`),     
-        ]);
+        const res1 = await axios.get(`${baseURL}/api/batches`);
         setBatches(res1?.data?.data || []);
-        
       } catch (err) {
         console.error("Failed to load filter options", err);
       }
@@ -80,26 +133,111 @@ const AllTypeNotficationDataTable = ({ url, columns }) => {
         const res = await axios.get(`${baseURL}/api/batches/${batchFilter}/relations`);
         setClasses(res?.data?.class || []);
         setDivisions(res?.data?.division || []);
-
-        
       } catch (err) {
         console.error("Failed to load filter options", err);
       }
     };
+    if (!batchFilter) {
+      setClasses([]);
+      setDivisions([]);
+      return;
+    }
     fetchData();
   }, [batchFilter]);
 
+  const buildFilterParams = useCallback(
+    () => ({
+      className: classFilterRef.current.trim(),
+      fromDate: fromDateRef.current.trim(),
+      toDate: toDateRef.current.trim(),
+      batchId: batchFilterRef.current.trim(),
+      divisionId: divisionFilterRef.current.trim(),
+    }),
+    []
+  );
+
+  const loadMobilePage = useCallback(
+    async (start = 0, reset = false) => {
+      if (mobileLoadLockRef.current) return;
+      mobileLoadLockRef.current = true;
+      setMobileLoading(true);
+      setMobileError("");
+
+      try {
+        const res = await axios.get(url, {
+          params: {
+            draw: 1,
+            start,
+            length: PAGE_SIZE,
+            filter: buildFilterParams(),
+          },
+        });
+
+        const rows = res.data?.data || [];
+        const total = Number(res.data?.recordsFiltered ?? res.data?.recordsTotal ?? 0);
+
+        setMobileItems((prev) => {
+          const next = reset ? rows : [...prev, ...rows];
+          setMobileHasMore(next.length < total && rows.length > 0);
+          return next;
+        });
+        setMobileStart(start + rows.length);
+      } catch (err) {
+        console.error("Failed to load report data", err);
+        setMobileError("Failed to load data. Please try again.");
+        if (reset) {
+          setMobileItems([]);
+          setMobileHasMore(false);
+        }
+      } finally {
+        setMobileLoading(false);
+        mobileLoadLockRef.current = false;
+      }
+    },
+    [url, buildFilterParams]
+  );
+
   const handleFilter = () => {
+    if (isMobile) {
+      setMobileItems([]);
+      setMobileStart(0);
+      setMobileHasMore(true);
+      setMobileFilterTick((t) => t + 1);
+      return;
+    }
     if (datatableRef.current) {
       datatableRef.current.draw();
     }
   };
 
   useEffect(() => {
-    if (!tableRef.current) return;
+    if (!isMobile) return;
+    loadMobilePage(0, true);
+  }, [isMobile, url, mobileFilterTick, loadMobilePage]);
+
+  useEffect(() => {
+    if (!isMobile || !mobileHasMore || mobileLoading) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && mobileHasMore && !mobileLoadLockRef.current) {
+          loadMobilePage(mobileStart, false);
+        }
+      },
+      { root: null, rootMargin: "120px", threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isMobile, mobileHasMore, mobileLoading, mobileStart, loadMobilePage]);
+
+  useEffect(() => {
+    if (isMobile || !tableRef.current) return;
 
     datatableRef.current = $(tableRef.current).DataTable({
-      pageLength: 10,
+      pageLength: PAGE_SIZE,
       processing: true,
       serverSide: true,
       destroy: true,
@@ -108,52 +246,58 @@ const AllTypeNotficationDataTable = ({ url, columns }) => {
         url,
         type: "GET",
         data: (d) => {
-          d.filter = {
-            className: classFilterRef.current.trim(),
-            fromDate: fromDateRef.current.trim(),
-            toDate: toDateRef.current.trim(),
-            batchId: batchFilterRef.current.trim(),
-            divisionId: divisionFilterRef.current.trim(),
-          };
+          d.filter = buildFilterParams();
         },
       },
       columns,
       createdRow: function (row, data) {
-        const documentUrl =
-          data?.diary_url ||
-          data?.notes_url ||
-          data?.assignment_url ||
-          data?.timetable_url ||
-          data?.document_url ||
-          "";
+        const documentUrl = getDocumentUrl(data);
 
         $(row).find(".table-action-view-document").on("click", function () {
           if (!documentUrl) return;
           setViewUrlRef.current(buildFileUrl(documentUrl));
         });
 
-        $(row).find(".table-action-download-document").on("click", async function () {
-          if (!documentUrl) return;
-          try {
-            await downloadFile(documentUrl);
-          } catch (err) {
-            console.error("Download failed:", err);
-          }
-        });
+        $(row)
+          .find(".table-action-download-document")
+          .on("click", async function () {
+            if (!documentUrl) return;
+            try {
+              await downloadFile(documentUrl);
+            } catch (err) {
+              console.error("Download failed:", err);
+            }
+          });
       },
 
       headerCallback: function (thead) {
         $(thead).find("th").css("white-space", "nowrap");
       },
-
     });
 
     return () => {
       if (datatableRef.current) {
         datatableRef.current.destroy(true);
+        datatableRef.current = null;
       }
     };
-  }, [url, columns]);
+  }, [url, columns, isMobile, buildFilterParams]);
+
+  const handleViewDocument = (row) => {
+    const documentUrl = getDocumentUrl(row);
+    if (!documentUrl) return;
+    setViewUrl(buildFileUrl(documentUrl));
+  };
+
+  const handleDownloadDocument = async (row) => {
+    const documentUrl = getDocumentUrl(row);
+    if (!documentUrl) return;
+    try {
+      await downloadFile(documentUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+    }
+  };
 
   return (
     <div className="fee-report-scope d-flex flex-column gap-4 pb-2">
@@ -311,17 +455,164 @@ const AllTypeNotficationDataTable = ({ url, columns }) => {
             </div>
           </div>
         </div>
+
         <div className="card-body px-3 px-md-4 pb-4">
-          <div
-            className="table-responsive shadow-sm rounded-3 border"
-            style={{ overflowY: "hidden", overflowX: "auto" }}
-          >
-            <table
-              className="table bordered-table mb-0"
-              id="dataTable"
-              ref={tableRef}
-            />
-          </div>
+          {isMobile ? (
+            <div className="report-mobile-list" aria-live="polite">
+              {mobileItems.length === 0 && !mobileLoading && !mobileError && (
+                <div className="report-mobile-empty">
+                  <span className="report-mobile-empty__icon" aria-hidden="true">
+                    <Icon icon="solar:inbox-line-bold-duotone" width="28" />
+                  </span>
+                  <p className="mb-0">No records found</p>
+                </div>
+              )}
+
+              {mobileError && (
+                <div className="report-mobile-error">
+                  <Icon icon="solar:danger-triangle-bold-duotone" width="20" />
+                  <p className="mb-0">{mobileError}</p>
+                </div>
+              )}
+
+              <div className="report-mobile-cards">
+                {mobileItems.map((row, index) => {
+                  const formatDate = (raw) => {
+                    if (!raw) return "";
+                    const date = new Date(raw);
+                    if (Number.isNaN(date.getTime())) return "";
+                    return date.toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    });
+                  };
+
+                  const infoRows = [
+                    {
+                      key: "sent_by",
+                      label: "Sent by",
+                      value: row?.staff_name || row?.staff || "",
+                    },
+                    {
+                      key: "sent_on",
+                      label: "Sent on",
+                      value: formatDate(row?.created_at || row?.createdAt),
+                    },
+                    {
+                      key: "batch_name",
+                      label: "Batch",
+                      value: row?.batch_name || "",
+                    },
+                    {
+                      key: "class_name",
+                      label: "Class",
+                      value: row?.class_name || "",
+                    },
+                    {
+                      key: "division_name",
+                      label: "Division",
+                      value: row?.division_name || "",
+                    },
+                  ].filter((item) => item.value);
+
+                  const skipKeys = new Set([
+                    "staff_name",
+                    "staff",
+                    "created_at",
+                    "createdAt",
+                    "batch_name",
+                    "class_name",
+                    "division_name",
+                    "message",
+                    "title",
+                    "topic",
+                  ]);
+
+                  const extraRows = cardFields
+                    .filter((field) => !skipKeys.has(field.data))
+                    .map((field) => ({
+                      key: field.data,
+                      label: field.title || field.data,
+                      value: formatCardValue(field, row),
+                    }))
+                    .filter((item) => item.value);
+
+                  const messageText =
+                    row?.message || row?.title || row?.topic || "";
+
+                  return (
+                    <article
+                      key={row.id ?? `row-${index}`}
+                      className="report-mobile-card"
+                    >
+                      <div className="report-mobile-card__rows">
+                        {[...infoRows, ...extraRows].map((item) => (
+                          <div key={item.key} className="report-mobile-row">
+                            <span className="report-mobile-row__label">{item.label}:</span>
+                            <span className="report-mobile-row__value">{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {messageText ? (
+                        <div className="report-mobile-card__message-wrap">
+                          <span className="report-mobile-card__message-label">Message:</span>
+                          <div className="report-mobile-card__message-box">
+                            {messageText}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {getDocumentUrl(row) ? (
+                        <div className="report-mobile-card__actions">
+                          <button
+                            type="button"
+                            className="report-mobile-action report-mobile-action--view"
+                            onClick={() => handleViewDocument(row)}
+                          >
+                            <Icon icon="solar:eye-bold-duotone" width="18" />
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            className="report-mobile-action report-mobile-action--download"
+                            onClick={() => handleDownloadDocument(row)}
+                          >
+                            <Icon icon="solar:download-minimalistic-bold-duotone" width="18" />
+                            Download
+                          </button>
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div ref={sentinelRef} className="report-mobile-sentinel" aria-hidden="true" />
+
+              {mobileLoading && (
+                <div className="report-mobile-loading">
+                  <span className="report-mobile-spinner" aria-hidden="true" />
+                  <span>Loading more…</span>
+                </div>
+              )}
+              {!mobileHasMore && mobileItems.length > 0 && !mobileLoading && (
+                <p className="report-mobile-end mb-0">You're all caught up</p>
+              )}
+            </div>
+          ) : (
+            <div
+              className="table-responsive shadow-sm rounded-3 border"
+              style={{ overflowY: "hidden", overflowX: "auto" }}
+            >
+              <table
+                className="table bordered-table mb-0"
+                id="dataTable"
+                ref={tableRef}
+              />
+            </div>
+          )}
         </div>
       </section>
       <DocumentViewer

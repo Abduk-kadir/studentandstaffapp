@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getStaffData } from "../redux/slices/registrationNo";
 import baseURL from "../utils/baseUrl";
+import axios from "axios";
 
 const DASHBOARD_CARDS = [
   {
@@ -12,32 +13,24 @@ const DASHBOARD_CARDS = [
     label: "My Attendance",
     icon: "solar:user-check-rounded-bold-duotone",
     accent: "emerald",
-    stat: "95%",
-    statHint: "Present this month",
   },
   {
     slug: "staff-attendance",
     label: "Staff Attendance",
     icon: "solar:users-group-rounded-bold-duotone",
     accent: "emerald",
-    stat: "48",
-    statHint: "Marked today",
   },
   {
     slug: "student-attendance",
     label: "Student Attendance",
     icon: "solar:clipboard-check-bold-duotone",
     accent: "sky",
-    stat: "92%",
-    statHint: "Class average",
   },
   {
     slug: "diary",
     label: "Diary",
     icon: "solar:notebook-bookmark-bold-duotone",
     accent: "rose",
-    stat: "12",
-    statHint: "Entries this week",
   },
   {
     slug: "notification",
@@ -45,79 +38,60 @@ const DASHBOARD_CARDS = [
     icon: "solar:bell-bing-bold-duotone",
     accent: "violet",
     stat: "5",
-    statHint: "Unread messages",
   },
   {
     slug: "timetable",
     label: "TimeTable",
     icon: "solar:calendar-mark-bold-duotone",
     accent: "amber",
-    stat: "8",
-    statHint: "Periods today",
   },
   {
     slug: "fee-report",
     label: "Fee Report",
     icon: "solar:wallet-money-bold-duotone",
     accent: "amber",
-    stat: "₹2.4L",
-    statHint: "Collected this month",
   },
   {
     slug: "assignment",
     label: "Assignment",
     icon: "solar:document-text-bold-duotone",
     accent: "lime",
-    stat: "5",
-    statHint: "Pending review",
   },
   {
     slug: "notes",
     label: "Notes",
     icon: "solar:notebook-bold-duotone",
     accent: "cyan",
-    stat: "12",
-    statHint: "Subject notes",
   },
   {
     slug: "student-list",
     label: "Student List",
     icon: "solar:users-group-two-rounded-bold-duotone",
     accent: "orange",
-    stat: "240",
-    statHint: "Total students",
   },
   {
     slug: "syllabus-trackin",
     label: "Syllabus Tracking",
     icon: "solar:checklist-bold-duotone",
     accent: "teal",
-    stat: "68%",
-    statHint: "Syllabus completed",
   },
   {
     slug: "about-school",
     label: "About School",
     icon: "solar:buildings-2-bold-duotone",
     accent: "slate",
-    stat: "25+",
-    statHint: "Years of excellence",
   },
   {
     slug: "profile",
     label: "Profile",
     icon: "solar:user-circle-bold-duotone",
     accent: "indigo",
-    stat: "100%",
-    statHint: "Profile complete",
   },
   {
     slug: "emergency-contact",
     label: "Emergency call to Institute",
     icon: "solar:phone-calling-bold-duotone",
     accent: "red",
-    stat: "24×7",
-    statHint: "Tap to call",
   },
 ];
 
@@ -135,6 +109,7 @@ const getStaffFullName = (staff) => {
 const getStaffPhotoUrl = (staff) => {
   if (!staff) return null;
   const raw =
+    staff.staff_photo ||
     staff.profile_image ||
     staff.profileImage ||
     staff.image ||
@@ -146,21 +121,22 @@ const getStaffPhotoUrl = (staff) => {
 };
 
 const DashBoardLayerThree = () => {
+  const [schoolName, setSchoolName] = useState("");
+  const [supportStatement, setSupportStatement] = useState("");
   const dispatch = useDispatch();
   const staff = useSelector((state) => state.registrationNo.staff?.data);
   const staffLoading = useSelector(
     (state) => state.registrationNo.staffLoading
   );
   const [photoError, setPhotoError] = useState(false);
+  const [photoVisible, setPhotoVisible] = useState(false);
 
   const fullName = getStaffFullName(staff);
   const photoUrl = getStaffPhotoUrl(staff);
-  const designation = staff?.designation || "—";
-  const department = staff?.department || "—";
-  const email = staff?.email || "—";
-  const mobile =
-    staff?.mobile_number || staff?.mobile || staff?.contact_number || "—";
-  const staffId = staff?.id || staff?.staff_id || staff?.reg_no || "—";
+  const designation =
+    staff?.designationInfo?.designation_name || staff?.designation || "—";
+  const department =
+    staff?.departmentInfo?.department_name || staff?.department || "—";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -171,13 +147,36 @@ const DashBoardLayerThree = () => {
 
   useEffect(() => {
     setPhotoError(false);
+    setPhotoVisible(false);
   }, [photoUrl]);
+  useEffect(() => {
+    const fetchInstituteData = async () => {
+      try {
+        const { data } = await axios.get(`${baseURL}/api/institute`);
+        const institute = data?.data?.[0];
+        setSchoolName(institute?.name || "");
+        setSupportStatement(institute?.support_statement || "");
+      } catch {
+        setSchoolName("");
+        setSupportStatement("");
+      }
+    };
+
+    fetchInstituteData();
+  }, []);
 
   return (
-    <section className="staff-dashboard">
-      <div className={`sd-profile${staffLoading ? " sd-profile--loading" : ""}`}>
+    <section className="staff-dashboard staff-dashboard--tiles-v2">
+      {schoolName ? (
+        <div className="sd-school-name">
+          <p className="sd-school-name__text">{schoolName}</p>
+        </div>
+      ) : null}
+
+      <div
+        className={`sd-profile sd-profile--staff${staffLoading ? " sd-profile--loading" : ""}`}
+      >
         <div className="sd-profile__info">
-          <p className="sd-profile__greeting">Welcome back</p>
           <h2 className="sd-profile__name">{fullName}</h2>
           <p className="sd-profile__designation">{designation}</p>
           <div className="sd-profile__details">
@@ -185,33 +184,27 @@ const DashBoardLayerThree = () => {
               <Icon icon="solar:buildings-2-bold-duotone" aria-hidden />
               {department}
             </p>
-            <p className="sd-profile__detail">
-              <Icon icon="solar:user-id-bold-duotone" aria-hidden />
-              ID: {staffId}
-            </p>
-            <p className="sd-profile__detail">
-              <Icon icon="solar:letter-bold-duotone" aria-hidden />
-              {email}
-            </p>
-            <p className="sd-profile__detail">
-              <Icon icon="solar:phone-bold-duotone" aria-hidden />
-              {mobile}
-            </p>
           </div>
         </div>
 
-        <div className="sd-profile__avatar-wrap">
-          {photoUrl && !photoError ? (
-            <img
-              src={photoUrl}
-              alt={fullName}
-              className="sd-profile__avatar"
-              onError={() => setPhotoError(true)}
-            />
-          ) : (
+        {photoUrl && !photoError ? (
+          <button
+            type="button"
+            className="sd-profile__view-btn"
+            onClick={() => setPhotoVisible(true)}
+            aria-label="View photo"
+          >
+            <Icon icon="solar:gallery-bold-duotone" aria-hidden />
+            View photo
+          </button>
+        ) : (
+          <div
+            className="sd-profile__avatar-wrap"
+            aria-label={`${fullName} profile`}
+          >
             <div
               className="sd-profile__avatar sd-profile__avatar--placeholder"
-              aria-label={`${fullName} profile`}
+              aria-hidden
             >
               <Icon
                 icon="solar:user-circle-bold-duotone"
@@ -219,32 +212,80 @@ const DashBoardLayerThree = () => {
                 aria-hidden
               />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      <h3 className="sd-section-title">Quick Access</h3>
-
-      <div className="sd-grid">
-        {DASHBOARD_CARDS.map(
-          ({ slug, label, icon, accent, stat, statHint }) => (
-            <Link key={slug} to={slug} className="sd-tile">
-              <span className="sd-tile__stat">{stat}</span>
-              <div className={`sd-tile__icon-wrap sd-tile__icon-wrap--${accent}`}>
-                <Icon icon={icon} aria-hidden />
+      {photoVisible && photoUrl && !photoError ? (
+        <div
+          className="sd-photo-popup"
+          onClick={() => setPhotoVisible(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${fullName} photo`}
+        >
+          <div
+            className="sd-photo-popup__card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sd-photo-popup__header">
+              <div className="sd-photo-popup__title-wrap">
+                <Icon
+                  icon="solar:user-circle-bold-duotone"
+                  className="sd-photo-popup__title-icon"
+                  aria-hidden
+                />
+                <p className="sd-photo-popup__title">Profile Photo</p>
               </div>
-              <div className="sd-tile__body">
-                <p className="sd-tile__label">{label}</p>
-                <span className="sd-tile__hint">{statHint}</span>
-              </div>
-              <Icon
-                icon="solar:alt-arrow-right-linear"
-                className="sd-tile__chevron"
-                aria-hidden
+              <button
+                type="button"
+                className="sd-photo-popup__close"
+                onClick={() => setPhotoVisible(false)}
+                aria-label="Close photo"
+              >
+                <Icon icon="solar:close-circle-bold" aria-hidden />
+              </button>
+            </div>
+            <div className="sd-photo-popup__body">
+              <img
+                src={photoUrl}
+                alt={fullName}
+                className="sd-photo-popup__img"
+                onError={() => {
+                  setPhotoError(true);
+                  setPhotoVisible(false);
+                }}
               />
-            </Link>
-          )
-        )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {supportStatement ? (
+        <div className="sd-support-statement">
+          <Icon
+            icon="solar:info-circle-bold-duotone"
+            className="sd-support-statement__icon"
+            aria-hidden
+          />
+          <p className="sd-support-statement__text">{supportStatement}</p>
+        </div>
+      ) : null}
+
+      <div className="sd-grid sd-grid--uniform">
+        {DASHBOARD_CARDS.map(({ slug, label, icon, accent, stat }) => (
+          <Link key={slug} to={slug} className="sd-tile sd-tile--uniform">
+            {slug === "notification" && stat ? (
+              <span className="sd-tile__stat">{stat}</span>
+            ) : null}
+            <div className={`sd-tile__icon-wrap sd-tile__icon-wrap--${accent}`}>
+              <Icon icon={icon} aria-hidden />
+            </div>
+            <div className="sd-tile__body">
+              <p className="sd-tile__label">{label}</p>
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
   );

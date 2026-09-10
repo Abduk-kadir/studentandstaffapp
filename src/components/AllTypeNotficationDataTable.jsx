@@ -36,7 +36,7 @@ const formatCardValue = (field, row) => {
   return String(raw);
 };
 
-const AllTypeNotficationDataTable = ({ url, columns }) => {
+const AllTypeNotficationDataTable = ({ url, columns,pagename }) => {
   const tableRef = useRef(null);
   const datatableRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -309,7 +309,7 @@ const AllTypeNotficationDataTable = ({ url, columns }) => {
                 <Icon icon="solar:filter-bold-duotone" width="22" />
               </span>
               <div>
-                <h5 className="card-title">Filter notification report</h5>
+                <h5 className="card-title">{`Filter ${pagename}`}</h5>
               </div>
             </div>
           </div>
@@ -450,7 +450,7 @@ const AllTypeNotficationDataTable = ({ url, columns }) => {
             </span>
             <div className="min-w-0">
               <h6 className="card-title mb-0 fw-semibold text-white text-truncate">
-                Notification report
+                {pagename}
               </h6>
             </div>
           </div>

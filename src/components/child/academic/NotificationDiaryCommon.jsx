@@ -76,7 +76,7 @@ const parseProgramSubjects = (payload) => {
   return Array.from(subjectMap.values());
 };
 
-const NotificationDiaryCommon = ({ isSubject = false }) => {
+const NotificationDiaryCommon = ({ isSubject = false,formType }) => {
   const [activeTab, setActiveTab] = useState('student');
   const [batchOptions, setBatchOptions] = useState([]);
   const [classOptions, setClassOptions] = useState([]);
@@ -481,7 +481,7 @@ const NotificationDiaryCommon = ({ isSubject = false }) => {
               <Icon icon="solar:bell-bold-duotone" width="24" />
             </span>
             <div>
-              <h5 className="card-title">Send Notification</h5>
+              <h5 className="card-title">Send {formType}</h5>
             </div>
           </div>
         </div>

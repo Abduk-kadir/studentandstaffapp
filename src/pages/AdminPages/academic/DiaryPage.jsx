@@ -54,7 +54,7 @@ const DiaryPage = () => {
         {isShowView ? (
           <DiaryReportPage />
         ) : (
-          <NotificationDiaryCommon isSubject={true} />
+          <NotificationDiaryCommon isSubject={true} formType='Diary'/>
         )}
       </div>
     </section>

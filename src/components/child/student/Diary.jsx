@@ -23,6 +23,14 @@ const PAGE_ICONS = {
   'emergency-call': 'solar:phone-calling-bold-duotone',
 };
 
+const getDocumentUrl = (item) =>
+  item?.diary_url ||
+  item?.notes_url ||
+  item?.assignment_url ||
+  item?.timetable_url ||
+  item?.document_url ||
+  "";
+
 const Diary = ({ url, isSubject }) => {
   const [data, setData] = useState([])
   const [subjectId, setSubjectId] = useState('')
@@ -173,16 +181,20 @@ const Diary = ({ url, isSubject }) => {
                   <p className='diary-card__message'>
                     {item?.message?item?.message:item?.title}
                   </p>
-                  <div className='diary-card__footer'>
-                    <button type='button' className='diary-card__view-btn' onClick={()=>
-                      handleView(item?.diary_url||item?.timetable_url||item?.assignment_url||item?.document_url)
-                    }>
-                      {showIcons && (
-                        <Icon icon='solar:document-text-bold-duotone' width={18} />
-                      )}
-                      View PDF
-                    </button>
-                  </div>
+                  {getDocumentUrl(item) ? (
+                    <div className='diary-card__footer'>
+                      <button
+                        type='button'
+                        className='diary-card__view-btn'
+                        onClick={() => handleView(getDocumentUrl(item))}
+                      >
+                        {showIcons && (
+                          <Icon icon='solar:document-text-bold-duotone' width={18} />
+                        )}
+                        View
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ))

@@ -31,7 +31,7 @@ const TimetableReportPage = () => {
   return (
     <div>
     
-      <AllTypeNotficationDataTable url={`${baseURL}/api/timetables`} columns={timetableColumns} />
+      <AllTypeNotficationDataTable url={`${baseURL}/api/timetables`} columns={timetableColumns} pagename='Timetables'/>
     </div>
   )
 }

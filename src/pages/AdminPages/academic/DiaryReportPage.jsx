@@ -28,7 +28,7 @@ const DiaryReportPage = () => {
     ]
   return (
     <div>
-      <AllTypeNotficationDataTable url={`${baseURL}/api/diaries`} columns={notesColumns} />
+      <AllTypeNotficationDataTable url={`${baseURL}/api/diaries`} columns={notesColumns} pagename="Diaries" />
     </div>
   )
 }

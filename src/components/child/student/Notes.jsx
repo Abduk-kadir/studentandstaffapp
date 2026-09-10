@@ -102,10 +102,16 @@ const Notes = () => {
               <span className='notes-detail__value'>{selectedNote?.staff || '—'}</span>
             </p>
           </div>
-          <button type='button' className='notes-detail__download-btn' onClick={() => handleView(selectedNote?.notes_url)}>
-            <Icon icon='solar:download-bold-duotone' width={22} />
-            View Notes
-          </button>
+          {selectedNote?.notes_url ? (
+            <button
+              type='button'
+              className='notes-detail__download-btn'
+              onClick={() => handleView(selectedNote.notes_url)}
+            >
+              <Icon icon='solar:eye-bold-duotone' width={18} />
+              View
+            </button>
+          ) : null}
         </section>
       )}
 

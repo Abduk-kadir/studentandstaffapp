@@ -9,12 +9,12 @@ import baseURL from "../utils/baseUrl";
 const STAT_CARD_SLUGS = new Set(["timetable", "notes", "holiday"]);
 
 const DASHBOARD_CARDS = [
-  {
+ /* {
     slug: "dues-fees",
     label: "Dues fees",
     icon: "solar:wallet-money-bold-duotone",
     accent: "emerald",
-  },
+  },*/
   {
     slug: "attendance",
     label: "Attendance",
@@ -72,12 +72,13 @@ const DASHBOARD_CARDS = [
     icon: "solar:buildings-2-bold-duotone",
     accent: "slate",
   },
+  /*
   {
     slug: "profile",
     label: "Profile",
     icon: "solar:user-circle-bold-duotone",
     accent: "indigo",
-  },
+  },*/
   {
     slug: "emergency-contact",
     label: "Emergency call to Institute",

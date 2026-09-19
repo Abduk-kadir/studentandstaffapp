@@ -8,7 +8,7 @@ import baseURL from "../utils/baseUrl";
 import axios from "axios";
 
 const DASHBOARD_CARDS = [
-  {
+  /*{
     slug: "my-attendance",
     label: "My Attendance",
     icon: "solar:user-check-rounded-bold-duotone",
@@ -19,7 +19,7 @@ const DASHBOARD_CARDS = [
     label: "Staff Attendance",
     icon: "solar:users-group-rounded-bold-duotone",
     accent: "emerald",
-  },
+  }*/,
   {
     slug: "student-attendance",
     label: "Student Attendance",
@@ -45,12 +45,13 @@ const DASHBOARD_CARDS = [
     icon: "solar:calendar-mark-bold-duotone",
     accent: "amber",
   },
+  /*
   {
     slug: "fee-report",
     label: "Fee Report",
     icon: "solar:wallet-money-bold-duotone",
     accent: "amber",
-  },
+  },*/
   {
     slug: "assignment",
     label: "Assignment",
@@ -63,6 +64,7 @@ const DASHBOARD_CARDS = [
     icon: "solar:notebook-bold-duotone",
     accent: "cyan",
   },
+  /*
   {
     slug: "student-list",
     label: "Student List",
@@ -74,13 +76,14 @@ const DASHBOARD_CARDS = [
     label: "Syllabus Tracking",
     icon: "solar:checklist-bold-duotone",
     accent: "teal",
-  },
+  },*/
   {
     slug: "about-school",
     label: "About School",
     icon: "solar:buildings-2-bold-duotone",
     accent: "slate",
   },
+  /*
   {
     slug: "profile",
     label: "Profile",
@@ -92,7 +95,7 @@ const DASHBOARD_CARDS = [
     label: "Emergency call to Institute",
     icon: "solar:phone-calling-bold-duotone",
     accent: "red",
-  },
+  },*/
 ];
 
 const getStaffFullName = (staff) => {

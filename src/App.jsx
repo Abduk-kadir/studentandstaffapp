@@ -5,6 +5,7 @@ import RouteScrollToTop from "./helper/RouteScrollToTop";
 const StaffLayout = lazy(() => import("./staffLayout/StaffLayout"));
 const StaffDashboardPage = lazy(() => import("./pages/staffPages/StaffDashboardPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const LoginPageSecond = lazy(() => import("./pages/LoginPageSecond"));
 const StaffRegistrationPage = lazy(() => import("./pages/AdminPages/staff/staffRegistrationPage"));
 const PersonalInformationForm = lazy(() =>
   import("./components/child/PersonalInformationForm")
@@ -54,6 +55,7 @@ const StudentDiaryPage = lazy(() => import("./pages/studentPages/StudentDiaryPag
 const StudentNotesPage = lazy(() => import("./pages/studentPages/StudentNotesPage"));
 const StudentEventPage = lazy(() => import("./pages/studentPages/StudentEventPage"));
 const HolidayPage = lazy(() => import("./pages/studentPages/HolidayPage"));
+const StudentProfilePage=lazy(() => import("./pages/studentPages/StudentProfilePage"));
 const StudentAttendancePage = lazy(() =>
   import("./pages/studentPages/StudentAttendancePage")
 );
@@ -88,6 +90,7 @@ function App() {
             />
             <Route path="/registration" element={<Registration />} />
             <Route path="/staff-registration" element={<StaffRegistrationPage />} />
+            <Route path="/login-second" element={<LoginPageSecond/>}/>
             <Route
               path="/personal-information"
               element={<PersonalInformationForm />}
@@ -128,6 +131,7 @@ function App() {
               <Route path="about-school" element={<AboutSchoolPage />} />
               <Route path="attendance" element={<StudentAttendancePage />} />
               <Route path="emergency-contact" element={<EmergencyContactPage />} />
+              <Route path="profile" element={<StudentProfilePage />} />
               <Route path=":slug" element={<StudentDiaryPage />} />
             </Route>
 

@@ -6,7 +6,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import baseURL from "../utils/baseUrl";
 
-const STAT_CARD_SLUGS = new Set(["timetable", "notes", "holiday"]);
+const STAT_KEY_BY_SLUG = {
+  "student-diary": "diarystat",
+  notification: "notificationstat",
+  holiday: "holidaystat",
+  notes: "notesstat",
+  assignment: "assignmentstat",
+  event: "eventstat",
+  timetable: "timetablestat",
+};
 
 const DASHBOARD_CARDS = [
  /* {
@@ -38,7 +46,6 @@ const DASHBOARD_CARDS = [
     label: "TimeTable",
     icon: "solar:calendar-mark-bold-duotone",
     accent: "amber",
-    stat: "8",
   },
   {
     slug: "assignment",
@@ -51,7 +58,6 @@ const DASHBOARD_CARDS = [
     label: "Notes",
     icon: "solar:notebook-bold-duotone",
     accent: "cyan",
-    stat: "12",
   },
   {
     slug: "event",
@@ -64,7 +70,6 @@ const DASHBOARD_CARDS = [
     label: "Holiday",
     icon: "solar:calendar-minimalistic-bold-duotone",
     accent: "teal",
-    stat: "15",
   },
   {
     slug: "about-school",
@@ -72,13 +77,13 @@ const DASHBOARD_CARDS = [
     icon: "solar:buildings-2-bold-duotone",
     accent: "slate",
   },
-  /*
+  
   {
     slug: "profile",
     label: "Profile",
     icon: "solar:user-circle-bold-duotone",
     accent: "indigo",
-  },*/
+  },
   {
     slug: "emergency-contact",
     label: "Emergency call to Institute",
@@ -100,8 +105,15 @@ const resolvePhotoPath = (raw) => {
   return `${baseURL}${raw.startsWith("/") ? "" : "/"}${raw}`;
 };
 
+const resolveStudentPhotoUrl = (raw) => {
+  if (!raw || typeof raw !== "string") return null;
+  if (raw.startsWith("http")) return raw;
+  return `${baseURL}/uploads/students/photoandsignature/${raw}`;
+};
+
 const getStudentPhotoUrl = (student) => {
   if (!student) return null;
+  if (student.photo_url) return resolveStudentPhotoUrl(student.photo_url);
   const raw =
     student.student_photo ||
     student.profile_image ||
@@ -111,31 +123,6 @@ const getStudentPhotoUrl = (student) => {
     student.avatar ||
     student.photograph ||
     student.passport_photo;
-  return resolvePhotoPath(raw);
-};
-
-const getStudentPhotoFromDocuments = (documents) => {
-  if (!Array.isArray(documents) || !documents.length) return null;
-
-  const photoDoc = documents.find((doc) =>
-    /photo|passport|picture/i.test(
-      doc.document_type ||
-        doc.document_name ||
-        doc.requirement_document?.document_type ||
-        doc.RequirementDocument?.document_type ||
-        ""
-    )
-  );
-
-  if (!photoDoc) return null;
-
-  const raw =
-    photoDoc.document_url ||
-    photoDoc.file_path ||
-    photoDoc.file_url ||
-    photoDoc.url ||
-    photoDoc.path;
-
   return resolvePhotoPath(raw);
 };
 
@@ -164,25 +151,23 @@ const getSchoolNameFromInstitute = (payload) => {
 
 const DashBoardLayerTwo = () => {
   const [student, setStudent] = useState(null);
+  const [allStat, setStat] = useState({});
   const [studentLoading, setStudentLoading] = useState(true);
   const [photoError, setPhotoError] = useState(false);
   const [photoVisible, setPhotoVisible] = useState(false);
-  const [documentPhotoUrl, setDocumentPhotoUrl] = useState(null);
   const [schoolName, setSchoolName] = useState("");
   const [supportStatement, setSupportStatement] = useState("");
 
   const regNo = localStorage.getItem("reg_no");
   const fullName = getStudentFullName(student);
-  const photoUrl = getStudentPhotoUrl(student) || documentPhotoUrl;
+  const photoUrl = getStudentPhotoUrl(student);
   const studentClass = student?.class || "—";
   const division = student?.division || "—";
-  const fatherName = student?.father_name || "—";
 
   useEffect(() => {
     const fetchStudentData = async () => {
       if (!regNo) {
         setStudent(null);
-        setDocumentPhotoUrl(null);
         setSchoolName("");
         setStudentLoading(false);
         return;
@@ -191,34 +176,24 @@ const DashBoardLayerTwo = () => {
       setStudentLoading(true);
       setSchoolName("");
       try {
-        const [personalRes, documentsRes, infoRes] = await Promise.allSettled([
+        const [personalRes, statRes] = await Promise.allSettled([
           axios.get(`${baseURL}/api/parmanent-personal-information/reg/${regNo}`),
-          axios.get(`${baseURL}/api/student-documents/student/${regNo}`),
-          axios.get(`${baseURL}/api/personal-information/reg_no/${regNo}`),
+          axios.get(`${baseURL}/api/student-dashboard/${regNo}`),
         ]);
 
         const personalData =
           personalRes.status === "fulfilled"
             ? personalRes.value.data?.data ?? personalRes.value.data ?? null
             : null;
-        const infoData =
-          infoRes.status === "fulfilled"
-            ? infoRes.value.data?.data ?? infoRes.value.data ?? null
-            : null;
-        const documents =
-          documentsRes.status === "fulfilled"
-            ? documentsRes.value.data?.data ?? []
-            : [];
+        const statData =
+          statRes.status === "fulfilled"
+            ? statRes.value.data?.data ?? {}
+            : {};
 
-        const mergedStudent =
-          personalData && infoData
-            ? { ...infoData, ...personalData }
-            : personalData || infoData;
+        setStat(statData);
+        setStudent(personalData);
 
-        setStudent(mergedStudent);
-        setDocumentPhotoUrl(getStudentPhotoFromDocuments(documents));
-
-        const classId = mergedStudent?.class;
+        const classId = personalData?.class;
         if (classId) {
           try {
             const { data } = await axios.get(
@@ -232,7 +207,6 @@ const DashBoardLayerTwo = () => {
         }
       } catch {
         setStudent(null);
-        setDocumentPhotoUrl(null);
         setSchoolName("");
       } finally {
         setStudentLoading(false);
@@ -274,17 +248,14 @@ const DashBoardLayerTwo = () => {
       >
         <div className="sd-profile__info">
           <h2 className="sd-profile__name">{fullName}</h2>
-          <p className="sd-profile__designation">
-            Class {studentClass} - {division}
-          </p>
           <div className="sd-profile__details">
             <p className="sd-profile__detail">
               <Icon icon="solar:user-id-bold-duotone" aria-hidden />
               Reg No: {regNo || "—"}
             </p>
             <p className="sd-profile__detail">
-              <Icon icon="solar:user-rounded-bold-duotone" aria-hidden />
-              Father: {fatherName}
+              <Icon icon="solar:square-academic-cap-bold-duotone" aria-hidden />
+              Class {studentClass} - {division}
             </p>
           </div>
         </div>
@@ -359,19 +330,24 @@ const DashBoardLayerTwo = () => {
       ) : null}
 
       <div className="sd-grid sd-grid--uniform">
-        {DASHBOARD_CARDS.map(({ slug, label, icon, accent, stat }) => (
-          <Link key={slug} to={slug} className="sd-tile sd-tile--uniform">
-            {STAT_CARD_SLUGS.has(slug) && stat ? (
-              <span className="sd-tile__stat">{stat}</span>
-            ) : null}
-            <div className={`sd-tile__icon-wrap sd-tile__icon-wrap--${accent}`}>
-              <Icon icon={icon} aria-hidden />
-            </div>
-            <div className="sd-tile__body">
-              <p className="sd-tile__label">{label}</p>
-            </div>
-          </Link>
-        ))}
+        {DASHBOARD_CARDS.map(({ slug, label, icon, accent }) => {
+          const statKey = STAT_KEY_BY_SLUG[slug];
+          const count = statKey != null ? allStat?.[statKey] : null;
+
+          return (
+            <Link key={slug} to={slug} className="sd-tile sd-tile--uniform">
+              {statKey != null && count != null ? (
+                <span className="sd-tile__stat">{count}</span>
+              ) : null}
+              <div className={`sd-tile__icon-wrap sd-tile__icon-wrap--${accent}`}>
+                <Icon icon={icon} aria-hidden />
+              </div>
+              <div className="sd-tile__body">
+                <p className="sd-tile__label">{label}</p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

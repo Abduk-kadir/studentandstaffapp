@@ -87,9 +87,10 @@
 
 .notes-card__header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.35rem;
   padding: 0.55rem 0.75rem;
   background: var(--notes-header-bg);
   border-bottom: none;
@@ -111,19 +112,19 @@
 .notes-card__date {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   min-width: 0;
+  width: 100%;
+  text-align: center;
 }
 
 .notes-card__subject {
-  flex: 1 1 auto;
-  justify-content: flex-start;
+  order: 2;
 }
 
 .notes-card__date {
-  flex: 0 0 auto;
-  justify-content: flex-end;
-  text-align: right;
+  order: 1;
 }
 
 .notes-card__icon-badge {
@@ -155,6 +156,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .notes-card__date-text {
@@ -163,6 +165,7 @@
   color: var(--notes-date);
   line-height: 1.35;
   white-space: nowrap;
+  text-align: center;
 }
 
 /* Selected note detail panel */
@@ -229,13 +232,13 @@
   flex-shrink: 0;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #0891b2;
+  color: #111114;
 }
 
 .notes-detail__value {
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--notes-subject);
+  color: #111114;
   word-break: break-word;
 }
 

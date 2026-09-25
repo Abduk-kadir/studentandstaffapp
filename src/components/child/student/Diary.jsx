@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import '../../../assets/css/diary.css';
 import DocumentViewer from '../../child/DocumentViewer'
+import SubjectFilterBar from './SubjectFilterBar'
 
 const DIARY_SLUG = 'student-diary';
 
@@ -30,6 +31,33 @@ const getDocumentUrl = (item) =>
   item?.timetable_url ||
   item?.document_url ||
   "";
+
+const formatSubmissionDate = (value) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatSubmissionTime = (value) => {
+  if (!value) return "—";
+  const parts = String(value).split(":");
+  if (parts.length < 2) return value;
+  const hours = Number(parts[0]);
+  const minutes = parts[1];
+  if (Number.isNaN(hours)) return value;
+  const date = new Date();
+  date.setHours(hours, Number(minutes) || 0, 0, 0);
+  return date.toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const Diary = ({ url, isSubject }) => {
   const [data, setData] = useState([])
@@ -109,37 +137,14 @@ const Diary = ({ url, isSubject }) => {
         {slug?.replace(/-/g, ' ')}
       </h4>
 
-      {subjectOptions.length > 0 && <div className='row diary-page__filters'>
-        <div className='col-8'>
-          <div className='diary-page__select-wrap'>
-            {showIcons && (
-              <Icon icon='solar:book-bold-duotone' className='diary-page__select-icon' />
-            )}
-            <select
-              className={`form-control diary-page__select${showIcons ? '' : ' diary-page__select--plain'}`}
-              value={subjectId}
-              onChange={(e) => setSubjectId(e.target.value)}
-            >
-              <option value=''>All Subjects</option>
-              {subjectOptions.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className='col-4'>
-          <button
-            type='button'
-            className='btn diary-page__search-btn'
-            onClick={handleSubjectChange}
-          >
-            {showIcons && <Icon icon='solar:magnifer-bold' width={18} />}
-            Search
-          </button>
-        </div>
-      </div>}
+      {subjectOptions.length > 0 ? (
+        <SubjectFilterBar
+          options={subjectOptions}
+          value={subjectId}
+          onChange={setSubjectId}
+          onSearch={handleSubjectChange}
+        />
+      ) : null}
 
       <div className='row diary-page__list'>
         <div className='diary-page__cards'>
@@ -155,37 +160,59 @@ const Diary = ({ url, isSubject }) => {
               <div className='card diary-card' key={item?.id ?? item?._id ?? index}>
                 <div className='card-header diary-card__header'>
                   <span className='diary-card__subject'>
-                    {showIcons && (
-                      <span className='diary-card__icon-badge diary-card__icon-badge--subject' aria-hidden='true'>
-                        <Icon icon='solar:book-2-bold-duotone' className='diary-card__subject-icon' />
-                      </span>
-                    )}
                     <span className='diary-card__subject-text'>{item?.subject_name}</span>
                   </span>
                   <span className='diary-card__date'>
-                    {showIcons && (
-                      <span className='diary-card__icon-badge diary-card__icon-badge--date' aria-hidden='true'>
-                        <Icon icon='solar:calendar-bold-duotone' className='diary-card__date-icon' />
-                      </span>
-                    )}
+                    <span className='diary-card__icon-badge diary-card__icon-badge--date' aria-hidden='true'>
+                      <Icon icon='solar:calendar-bold-duotone' className='diary-card__date-icon' />
+                    </span>
                     <span className='diary-card__date-text'>
                       {item?.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                     </span>
-               
                   </span>
                 </div>
                 <div className='card-body diary-card__body'>
                   <p className='diary-card__teacher'>
                     {item?.staff ? item?.staff : 'arman khan'}
                   </p>
-                  <p className='diary-card__message'>
-                    {item?.message?item?.message:item?.title}
-                  </p>
+                  {slug === 'assignment' ? (
+                    <>
+                      <p className='notes-card__meta'>
+                        <span className='notes-card__meta-label'>Topic:</span>{' '}
+                        <span className='notes-card__meta-value'>
+                          {item?.title || '—'}
+                        </span>
+                      </p>
+                      <p className='notes-card__meta'>
+                        <span className='notes-card__meta-label'>Submission Date:</span>{' '}
+                        <span className='notes-card__meta-value'>
+                          {formatSubmissionDate(item?.submission_date)}
+                        </span>
+                      </p>
+                      <p className='notes-card__meta'>
+                        <span className='notes-card__meta-label'>Submission Time:</span>{' '}
+                        <span className='notes-card__meta-value'>
+                          {formatSubmissionTime(item?.submission_time)}
+                        </span>
+                      </p>
+                    </>
+                  ) : slug === 'timetable' ? (
+                    <p className='notes-card__meta'>
+                      <span className='notes-card__meta-label'>Valid From:</span>{' '}
+                      <span className='notes-card__meta-value'>
+                        {formatSubmissionDate(item?.valid_from)}
+                      </span>
+                    </p>
+                  ) : (
+                    <p className='diary-card__message'>
+                      {item?.message ? item?.message : item?.title}
+                    </p>
+                  )}
                   {getDocumentUrl(item) ? (
                     <div className='diary-card__footer'>
                       <button
                         type='button'
-                        className='diary-card__view-btn'
+                        className={`diary-card__view-btn${slug === 'assignment' ? ' diary-card__view-btn--assignment' : ''}${slug === 'notes' ? ' notes-card__view-btn' : ''}`}
                         onClick={() => handleView(getDocumentUrl(item))}
                       >
                         {showIcons && (

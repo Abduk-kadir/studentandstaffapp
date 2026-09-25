@@ -1,123 +1,164 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { Icon } from '@iconify/react/dist/iconify.js'
-import baseURL from '../../../utils/baseUrl'
-import '../../../assets/css/notes.css'
-import DocumentViewer from '../../child/DocumentViewer'
+import React, { useState, useEffect, useMemo } from "react";
+import axios from "axios";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import baseURL from "../../../utils/baseUrl";
+import "../../../assets/css/diary.css";
+import DocumentViewer from "../../child/DocumentViewer";
+import SubjectFilterBar from "./SubjectFilterBar";
 
 const formatNoteDate = (value) => {
-  if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 const Notes = () => {
-  const [notes, setNotes] = useState([])
-  const [selectedNote, setSelectedNote] = useState(null)
-  const [viewUrl, setViewUrl] = useState(null)
-  const reg_no = localStorage.getItem('reg_no')
-
-  
+  const [notes, setNotes] = useState([]);
+  const [subjectId, setSubjectId] = useState("");
+  const [searchSubjectId, setSearchSubjectId] = useState("");
+  const [viewUrl, setViewUrl] = useState(null);
+  const reg_no = localStorage.getItem("reg_no");
 
   useEffect(() => {
     const fetchNotes = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/api/notes/student/${reg_no}`)
-        setNotes(response?.data?.data || [])
-      } catch {
-        setNotes([])
+      if (!reg_no) {
+        setNotes([]);
+        return;
       }
-    }
-    fetchNotes()
-  }, [reg_no])
+      try {
+        const response = await axios.get(
+          `${baseURL}/api/notes/student/${reg_no}`
+        );
+        setNotes(response?.data?.data || []);
+      } catch {
+        setNotes([]);
+      }
+    };
+    fetchNotes();
+  }, [reg_no]);
 
-  const handleNotes = (note) => {
-    setSelectedNote(note)
-  }
+  const subjectOptions = useMemo(() => {
+    const map = new Map();
+    notes?.forEach((item) => {
+      const id = item?.subject ?? item?.subject_id;
+      if (id != null && !map.has(String(id))) {
+        map.set(String(id), item?.subject_name);
+      }
+    });
+    return Array.from(map, ([id, name]) => ({ id, name }));
+  }, [notes]);
+
+  const displayData = useMemo(() => {
+    if (!searchSubjectId) return notes || [];
+    return (notes || []).filter(
+      (item) => String(item?.subject ?? item?.subject_id) === searchSubjectId
+    );
+  }, [notes, searchSubjectId]);
+
+  const handleSubjectSearch = () => {
+    setSearchSubjectId(subjectId);
+  };
+
   const handleView = (url) => {
-    if (url) setViewUrl(`${baseURL}${url}`)
-  }
+    if (url) setViewUrl(`${baseURL}${url}`);
+  };
 
   return (
-    <div className='notes-page'>
-      <h4 className='notes-page__title'>
-        <span className='notes-page__title-icon'>
-          <Icon icon='solar:notebook-bold-duotone' />
+    <div className="container-fluid diary-page diary-page--plain">
+      <h4 className="diary-page__title">
+        <span className="diary-page__title-icon diary-page__title-icon--notes">
+          <Icon icon="solar:notebook-bold-duotone" />
         </span>
-        Student Notes
+        Notes
       </h4>
 
-      <div className='notes-page__list'>
-        {notes.length === 0 ? (
-          <div className='notes-page__empty'>
-            <Icon icon='solar:inbox-line-bold-duotone' className='notes-page__empty-icon' />
-            No notes found
-          </div>
-        ) : (
-          notes.map((note, index) => (
-            <article
-              className={`notes-card${selectedNote === note ? ' notes-card--selected' : ''}`}
-              key={note?.id ?? note?._id ?? index}
-              onClick={() => handleNotes(note)}
-            >
-              <header className='notes-card__header'>
-                <div className='notes-card__subject'>
-                  <span className='notes-card__icon-badge notes-card__icon-badge--subject' aria-hidden='true'>
-                    <Icon icon='solar:book-2-bold-duotone' />
+      {subjectOptions.length > 0 ? (
+        <SubjectFilterBar
+          options={subjectOptions}
+          value={subjectId}
+          onChange={setSubjectId}
+          onSearch={handleSubjectSearch}
+        />
+      ) : null}
+
+      <div className="row diary-page__list">
+        <div className="diary-page__cards">
+          {displayData.length === 0 ? (
+            <div className="diary-page__empty">No notes found</div>
+          ) : (
+            displayData.map((note, index) => (
+              <div
+                className="card diary-card"
+                key={note?.id ?? note?._id ?? index}
+              >
+                <div className="card-header diary-card__header">
+                  <span className="diary-card__subject">
+                    <span className="diary-card__subject-text">
+                      {note?.subject_name || "Subject"}
+                    </span>
                   </span>
-                  <span className='notes-card__subject-name'>{note?.subject_name || 'Subject'}</span>
-                </div>
-                <div className='notes-card__date'>
-                  <span className='notes-card__icon-badge notes-card__icon-badge--date' aria-hidden='true'>
-                    <Icon icon='solar:calendar-bold-duotone' />
+                  <span className="diary-card__date">
+                    <span
+                      className="diary-card__icon-badge diary-card__icon-badge--date"
+                      aria-hidden="true"
+                    >
+                      <Icon
+                        icon="solar:calendar-bold-duotone"
+                        className="diary-card__date-icon"
+                      />
+                    </span>
+                    <span className="diary-card__date-text">
+                      {formatNoteDate(note?.createdAt ?? note?.createAt)}
+                    </span>
                   </span>
-                  <time className='notes-card__date-text' dateTime={note?.createdAt ?? note?.createAt}>
-                    {formatNoteDate(note?.createdAt ?? note?.createAt)}
-                  </time>
                 </div>
-              </header>
-            
-            </article>
-          ))
-        )}
+
+                <div className="card-body diary-card__body">
+                  <p className="diary-card__teacher notes-card__staff">
+                    {note?.staff || "—"}
+                  </p>
+                  <p className="notes-card__meta">
+                    <span className="notes-card__meta-label">Chapter:</span>{" "}
+                    <span className="notes-card__meta-value">
+                      {note?.chapter || "—"}
+                    </span>
+                  </p>
+                  <p className="notes-card__meta">
+                    <span className="notes-card__meta-label">Topic:</span>{" "}
+                    <span className="notes-card__meta-value">
+                      {note?.topic || "—"}
+                    </span>
+                  </p>
+                  {note?.notes_url ? (
+                    <div className="diary-card__footer">
+                      <button
+                        type="button"
+                        className="diary-card__view-btn notes-card__view-btn"
+                        onClick={() => handleView(note.notes_url)}
+                      >
+                        View
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
-      {selectedNote && (
-        <section className='notes-detail'>
-          <div className='notes-detail__body'>
-            <p className='notes-detail__line'>
-              <span className='notes-detail__label'>Chapter:</span>
-              <span className='notes-detail__value'>{selectedNote?.chapter || '—'}</span>
-            </p>
-            <p className='notes-detail__line'>
-              <span className='notes-detail__label'>Topic:</span>
-              <span className='notes-detail__value'>{selectedNote?.topic || '—'}</span>
-            </p>
-            <p className='notes-detail__line'>
-              <span className='notes-detail__label'>staff:</span>
-              <span className='notes-detail__value'>{selectedNote?.staff || '—'}</span>
-            </p>
-          </div>
-          {selectedNote?.notes_url ? (
-            <button
-              type='button'
-              className='notes-detail__download-btn'
-              onClick={() => handleView(selectedNote.notes_url)}
-            >
-              <Icon icon='solar:eye-bold-duotone' width={18} />
-              View
-            </button>
-          ) : null}
-        </section>
-      )}
 
-      <DocumentViewer url={viewUrl} show={!!viewUrl} onClose={() => setViewUrl(null)} />
+      <DocumentViewer
+        url={viewUrl}
+        show={!!viewUrl}
+        onClose={() => setViewUrl(null)}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default Notes
+export default Notes;

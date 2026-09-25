@@ -188,6 +188,11 @@
   margin: 0;
 }
 
+.sd-profile--student .sd-profile__detail {
+  font-weight: 700;
+  color: #111114;
+}
+
 .sd-profile__detail svg {
   flex-shrink: 0;
   display: flex;

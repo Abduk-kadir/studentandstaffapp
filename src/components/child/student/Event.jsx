@@ -7,7 +7,7 @@ import '../../../assets/css/diary.css';
 
 const PAGE_ICONS = {
   event: 'solar:calendar-date-bold-duotone',
-  holiday: 'solar:palms-bold-duotone',
+  holiday: 'solar:calendar-minimalistic-bold-duotone',
 };
 
 const SLUG_CONFIG = {
@@ -77,13 +77,11 @@ const Event = ({slug}) => {
           ) : (
             data.map((item, index) => (
               <div className="card diary-card" key={item?.id ?? item?._id ?? index}>
-                <div className="card-header diary-card__header">
-                  <span className="diary-card__subject">
-                    <span className="diary-card__subject-text">
-                      {item?.[config?.titleField] || '—'}
-                    </span>
-                  </span>
+                <div className="card-header diary-card__header diary-card__header--date-only">
                   <span className="diary-card__date">
+                    <span className="diary-card__icon-badge diary-card__icon-badge--date" aria-hidden="true">
+                      <Icon icon="solar:calendar-bold-duotone" className="diary-card__date-icon" />
+                    </span>
                     <span className="diary-card__date-text">
                       {formatDisplayDate(item?.date || item?.createdAt)}
                     </span>
@@ -91,11 +89,9 @@ const Event = ({slug}) => {
                 </div>
 
                 <div className="card-body diary-card__body">
-                  {(item?.class_name || item?.division_name) && (
-                    <p className="diary-card__teacher">
-                      {[item?.class_name, item?.division_name].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
+                  <p className="diary-card__message">
+                    {item?.[config?.titleField] || '—'}
+                  </p>
                 </div>
               </div>
             ))

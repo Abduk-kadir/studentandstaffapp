@@ -6,33 +6,16 @@ const StaffLayout = lazy(() => import("./staffLayout/StaffLayout"));
 const StaffDashboardPage = lazy(() => import("./pages/staffPages/StaffDashboardPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const LoginPageSecond = lazy(() => import("./pages/LoginPageSecond"));
-const StaffRegistrationPage = lazy(() => import("./pages/AdminPages/staff/staffRegistrationPage"));
-const PersonalInformationForm = lazy(() =>
-  import("./components/child/PersonalInformationForm")
-);
-const Registration = lazy(() => import("./components/child/Registration"));
-const SubjectStage = lazy(() => import("./components/child/SubjectStage"));
-const DocumentStage = lazy(() => import("./components/child/DocumentStage"));
-const DeclarationStage = lazy(() =>
-  import("./components/child/DeclarationStage")
-);
-const ParentParticularStage = lazy(() =>
-  import("./components/child/ParentParticularStage")
-);
-const EducationalDetailStage = lazy(() =>
-  import("./components/child/EducationalDetailStage")
-);
-const TransportDetailStage = lazy(() =>
-  import("./components/child/TransportDetailStage")
-);
-const OtherInformationStage = lazy(() =>
-  import("./components/child/OtherInformationStage")
-);
-const CompletedStage = lazy(() => import("./components/child/CompletedStage"));
+
+
 
 const TakeInAndOutAttendancePage = lazy(() =>
   import("./pages/AdminPages/academic/TakeInAndOutAttendancePage")
 );
+const StaffAttendancePage=lazy(() => import("./pages/AdminPages/academic/StaffAttendancePage"));
+const StaffMyAttendancePage=lazy(() => import("./pages/AdminPages/academic/StaffMyAttendance"));
+const StaffProfilePage=lazy(() => import("./pages/AdminPages/academic/StaffProfile"));
+
 const NotificationPage = lazy(() =>
   import("./pages/AdminPages/academic/NotificationPage")
 );
@@ -46,6 +29,9 @@ const TimetablePage = lazy(() =>
   import("./pages/AdminPages/academic/TimetablePage")
 );
 
+
+const StudentListPage = lazy(() => import("./pages/AdminPages/academic/StudentListPage"));
+
 const StudentLayout = lazy(() => import("./studentLayout/StudentLayout"));
 const StudentDashboard = lazy(() =>
   import("./pages/studentPages/StudentDashboardPage")
@@ -55,6 +41,7 @@ const StudentDiaryPage = lazy(() => import("./pages/studentPages/StudentDiaryPag
 const StudentNotesPage = lazy(() => import("./pages/studentPages/StudentNotesPage"));
 const StudentEventPage = lazy(() => import("./pages/studentPages/StudentEventPage"));
 const HolidayPage = lazy(() => import("./pages/studentPages/HolidayPage"));
+const PreodicTestPage = lazy(() => import("./components/child/student/PreodicTest"));
 const StudentProfilePage=lazy(() => import("./pages/studentPages/StudentProfilePage"));
 const StudentAttendancePage = lazy(() =>
   import("./pages/studentPages/StudentAttendancePage")
@@ -88,33 +75,10 @@ function App() {
                 !user ? <Navigate to="/dashboard" replace /> : <LoginPage />
               }
             />
-            <Route path="/registration" element={<Registration />} />
-            <Route path="/staff-registration" element={<StaffRegistrationPage />} />
+            
             <Route path="/login-second" element={<LoginPageSecond/>}/>
-            <Route
-              path="/personal-information"
-              element={<PersonalInformationForm />}
-            />
-            <Route
-              path="/educational-detail-stage"
-              element={<EducationalDetailStage />}
-            />
-            <Route path="/subject-stage" element={<SubjectStage />} />
-            <Route
-              path="/parent-particular-stage"
-              element={<ParentParticularStage />}
-            />
-            <Route
-              path="/transport-detail-stage"
-              element={<TransportDetailStage />}
-            />
-            <Route
-              path="/other-information-stage"
-              element={<OtherInformationStage />}
-            />
-            <Route path="/declaration-stage" element={<DeclarationStage />} />
-            <Route path="/document-stage" element={<DocumentStage />} />
-            <Route path="/complete-stage" element={<CompletedStage />} />
+            
+           
 
             {/*student route start*/}
 
@@ -128,6 +92,7 @@ function App() {
               <Route path="notes" element={<StudentNotesPage />} />
               <Route path="event" element={<StudentEventPage />} />
               <Route path="holiday" element={<HolidayPage />} />
+              <Route path="periodic-test" element={<PreodicTestPage />} />
               <Route path="about-school" element={<AboutSchoolPage />} />
               <Route path="attendance" element={<StudentAttendancePage />} />
               <Route path="emergency-contact" element={<EmergencyContactPage />} />
@@ -139,16 +104,20 @@ function App() {
 
             <Route path="staffdashboard" element={<StaffLayout />}>
               <Route index element={<StaffDashboardPage />} />
+              <Route path="staff-attendance" element={<StaffAttendancePage />} />
+              <Route path="my-attendance" element={<StaffMyAttendancePage />} />
               <Route
                 path="student-attendance"
                 element={<TakeInAndOutAttendancePage />}
               />
+              <Route path="profile" element={<StaffProfilePage />} />
               <Route path="diary" element={<DiaryPage />} />
               <Route path="notification" element={<NotificationPage />} />
               <Route path="timetable" element={<TimetablePage />} />
               <Route path="assignment" element={<AssignmentPage />} />
               <Route path="notes" element={<NotesPage />} />
               <Route path="about-school" element={<AboutSchoolPage />} />
+              <Route path="student-list" element={<StudentListPage />} />
             </Route>
           </Route>
         </Routes>

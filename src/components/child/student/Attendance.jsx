@@ -4,8 +4,6 @@ import axios from 'axios'
 
 import { Icon } from '@iconify/react/dist/iconify.js'
 
-import baseURL from '../../../utils/baseUrl'
-
 import { useEffect, useState,useMemo } from 'react'
 
 import '../../../assets/css/attendance.css'
@@ -47,13 +45,12 @@ const formatDisplayTime = (value) => {
 
 
 
-const Attendance = () => {
+const Attendance = ({ todayUrl, monthlyUrl }) => {
 
   const [view, setView] = useState('today')
   const [todayData, setTodayData] = useState([])
   const [monthlyData, setMontlyData] = useState([])
   const [detattofaDay,setDetattofaDay]=useState({})
-  const reg_no=localStorage.getItem('reg_no')
 
   let date = new Date()
 
@@ -91,12 +88,12 @@ const Attendance = () => {
 
       try {
 
-        if(view=='today'){
-        const response = await axios.get(`${baseURL}/api/in-out-attendance/14/${formattedDate}`)
+        if(view=='today' && todayUrl){
+        const response = await axios.get(`${todayUrl}/${formattedDate}`)
         setTodayData(response.data.data)
         }
-        else if(view=='monthly'){
-          const response =await axios.get(`${baseURL}/api/in-out-attendance/${reg_no}/month/${selectedDate}`)
+        else if(view=='monthly' && monthlyUrl){
+          const response =await axios.get(`${monthlyUrl}/${selectedDate}`)
           setMontlyData(response?.data?.data)
           
         }
@@ -107,7 +104,7 @@ const Attendance = () => {
 
     fetchData()
 
-  }, [view,selectedDate])
+  }, [view,selectedDate,todayUrl,monthlyUrl])
 
 
 

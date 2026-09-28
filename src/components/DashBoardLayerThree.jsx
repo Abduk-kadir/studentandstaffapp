@@ -8,7 +8,7 @@ import baseURL from "../utils/baseUrl";
 import axios from "axios";
 
 const DASHBOARD_CARDS = [
-  /*{
+  {
     slug: "my-attendance",
     label: "My Attendance",
     icon: "solar:user-check-rounded-bold-duotone",
@@ -19,7 +19,7 @@ const DASHBOARD_CARDS = [
     label: "Staff Attendance",
     icon: "solar:users-group-rounded-bold-duotone",
     accent: "emerald",
-  }*/,
+  },
   {
     slug: "student-attendance",
     label: "Student Attendance",
@@ -64,14 +64,14 @@ const DASHBOARD_CARDS = [
     icon: "solar:notebook-bold-duotone",
     accent: "cyan",
   },
-  /*
+  
   {
     slug: "student-list",
     label: "Student List",
     icon: "solar:users-group-two-rounded-bold-duotone",
     accent: "orange",
   },
-  {
+ /*{
     slug: "syllabus-trackin",
     label: "Syllabus Tracking",
     icon: "solar:checklist-bold-duotone",
@@ -83,19 +83,14 @@ const DASHBOARD_CARDS = [
     icon: "solar:buildings-2-bold-duotone",
     accent: "slate",
   },
-  /*
+  
   {
     slug: "profile",
     label: "Profile",
     icon: "solar:user-circle-bold-duotone",
     accent: "indigo",
   },
-  {
-    slug: "emergency-contact",
-    label: "Emergency call to Institute",
-    icon: "solar:phone-calling-bold-duotone",
-    accent: "red",
-  },*/
+  
 ];
 
 const getStaffFullName = (staff) => {

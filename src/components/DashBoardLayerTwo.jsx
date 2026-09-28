@@ -72,6 +72,12 @@ const DASHBOARD_CARDS = [
     accent: "teal",
   },
   {
+    slug: "periodic-test",
+    label: "PeriodicTest",
+    icon: "solar:checklist-bold-duotone",
+    accent: "purple",
+  },
+  {
     slug: "about-school",
     label: "About School",
     icon: "solar:buildings-2-bold-duotone",

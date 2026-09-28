@@ -97,24 +97,10 @@ const StudentProfilePage = () => {
             <div className="card diary-card">
               <div className="card-header diary-card__header">
                 <span className="diary-card__subject">
-                  <span
-                    className="diary-card__icon-badge diary-card__icon-badge--subject"
-                    aria-hidden="true"
-                  >
-                    <Icon
-                      icon="solar:user-id-bold-duotone"
-                      className="diary-card__subject-icon"
-                    />
-                  </span>
                   <span className="diary-card__subject-text">
                     {fullName || "Student Detail"}
                   </span>
                 </span>
-                {reg_no ? (
-                  <span className="diary-card__date">
-                    <span className="diary-card__date-text">Reg: {reg_no}</span>
-                  </span>
-                ) : null}
               </div>
 
               <div className="card-body diary-card__body emergency-contact-card__body student-profile-card__body">

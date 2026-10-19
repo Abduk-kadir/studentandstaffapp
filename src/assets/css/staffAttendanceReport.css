@@ -1,0 +1,136 @@
+@media (min-width: 992px) {
+  .chfi-wrapper .report-filter-grid.sar-filter-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.fee-report-scope .report-mobile-cards.sar-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .fee-report-scope .report-mobile-cards.sar-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .fee-report-scope .report-mobile-cards.sar-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.fee-report-scope .report-mobile-card.sar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fee-report-scope .report-mobile-card__rows.sar-card__rows {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px;
+}
+
+.sar-card__status {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 16px 16px 0;
+}
+
+.sar-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.sar-card__status--present .sar-card__badge {
+  background: #16a34a;
+  box-shadow: 0 6px 14px -6px rgba(22, 163, 74, 0.65);
+}
+
+.sar-card__status--absent .sar-card__badge {
+  background: #dc2626;
+  box-shadow: 0 6px 14px -6px rgba(220, 38, 38, 0.65);
+}
+
+.sar-summary {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 16px 16px 0;
+}
+
+.sar-summary__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 112px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sar-summary__label {
+  font-weight: 600;
+}
+
+.sar-summary__value {
+  font-size: 0.9rem;
+}
+
+.sar-summary__item--total {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.sar-summary__item--present {
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+.sar-summary__item--absent {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.sar-card__times {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.sar-card__time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #16a34a;
+  white-space: nowrap;
+}
+
+.sar-card__time--out {
+  color: #ea580c;
+}
+
+.sar-card__time-label {
+  font-weight: 600;
+  color: #64748b;
+}

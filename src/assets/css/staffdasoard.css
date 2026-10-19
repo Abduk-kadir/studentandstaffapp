@@ -1020,21 +1020,32 @@
 }
 
 .staff-dashboard-page__content,
-.take-in-out-attendance-page__content {
+.take-in-out-attendance-page__content,
+.take-in-out-attendance-page__report {
   margin-top: 1.25rem;
+}
+
+.take-in-out-attendance-page--view {
+  padding-bottom: 0;
+  min-height: auto;
 }
 
 .sd-mode-grid {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: stretch;
   gap: 0.75rem;
   width: 100%;
 }
 
+.sd-mode-grid--three {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
 .sd-mode-btn {
   display: inline-flex;
-  flex: 1 1 0;
+  flex: 1 1 140px;
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
@@ -1052,7 +1063,7 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  white-space: nowrap;
+  white-space: normal;
   transition:
     transform 0.22s ease,
     box-shadow 0.22s ease,
@@ -1071,18 +1082,6 @@
   background: var(--sd-mode-accent, #007aff);
   opacity: 0.35;
   transition: opacity 0.22s ease;
-}
-
-.sd-mode-btn::after {
-  content: "";
-  position: absolute;
-  top: -28px;
-  right: -28px;
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  background: var(--sd-mode-glow, rgba(0, 122, 255, 0.08));
-  pointer-events: none;
 }
 
 .sd-mode-btn:hover {
@@ -1104,6 +1103,19 @@
 .sd-mode-btn--take {
   --sd-mode-accent: #10b981;
   --sd-mode-glow: rgba(16, 185, 129, 0.14);
+}
+
+.sd-mode-btn--summary {
+  --sd-mode-accent: #8b5cf6;
+  --sd-mode-glow: rgba(139, 92, 246, 0.14);
+}
+
+.sd-mode-btn--summary.sd-mode-btn--active {
+  border-color: rgba(139, 92, 246, 0.28);
+  background: linear-gradient(160deg, #ffffff 0%, #f5f3ff 100%);
+  box-shadow:
+    0 8px 24px rgba(139, 92, 246, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .sd-mode-btn--view.sd-mode-btn--active {
@@ -1152,6 +1164,12 @@
   color: #047857;
 }
 
+.sd-mode-btn__icon--violet {
+  --sd-icon-shadow: rgba(124, 58, 237, 0.22);
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  color: #6d28d9;
+}
+
 .sd-mode-btn__body {
   display: inline-flex;
   align-items: center;
@@ -1164,7 +1182,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--sd-text);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .sd-mode-btn__hint {

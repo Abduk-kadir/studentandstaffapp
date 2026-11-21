@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -16,6 +16,21 @@ const STUDENT_FIELDS = [
   { key: "roll_no", label: "Roll No" },
 ];
 
+const getTodayDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatDisplayDate = (isoDate) => {
+  if (!isoDate) return "";
+  const [year, month, day] = isoDate.split("-");
+  if (!year || !month || !day) return isoDate;
+  return `${day}/${month}/${year}`;
+};
+
 const InAndOutDetailReportPage = ({
   reportUrl = `${baseURL}/api/in-out-attendance/reports/detail`,
   title = "In / Out Detail Report",
@@ -27,18 +42,19 @@ const InAndOutDetailReportPage = ({
   const classId = searchParams.get("class_id");
   const divisionId = searchParams.get("division_id");
 
+  const dateInputRef = useRef(null);
   const [batches, setBatches] = useState([]);
   const [classes, setClasses] = useState([]);
   const [divisions, setDivisions] = useState([]);
 
-  const [dateFilter, setDateFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState(getTodayDate);
   const [batchFilter, setBatchFilter] = useState("");
   const [classFilter, setClassFilter] = useState(() => classId || "");
   const [divisionFilter, setDivisionFilter] = useState(() => divisionId || "");
   const [appliedFilters, setAppliedFilters] = useState(() =>
     classId && divisionId
       ? {
-          filter: { className: classId, date: "", batchId: "", divisionId },
+          filter: { className: classId, date: getTodayDate(), batchId: "", divisionId },
           submitCount: 0,
         }
       : null
@@ -105,15 +121,36 @@ const InAndOutDetailReportPage = ({
                     <span className="label-dot" />
                     Date
                   </label>
-                  <div className="icon-field">
+                  <div className="icon-field" style={{ position: "relative" }}>
                     <span className="icon">
                       <Icon icon="solar:calendar-bold-duotone" width="18" />
                     </span>
                     <input
                       className="form-control"
+                      type="text"
+                      readOnly
+                      value={formatDisplayDate(dateFilter)}
+                      placeholder="DD/MM/YYYY"
+                      tabIndex={-1}
+                      aria-label="Date"
+                    />
+                    <input
+                      ref={dateInputRef}
                       type="date"
                       value={dateFilter}
-                      onChange={(e) => setDateFilter(e.target.value)}
+                      onChange={(e) => setDateFilter(e.target.value || getTodayDate())}
+                      tabIndex={-1}
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        opacity: 0,
+                        cursor: "pointer",
+                        width: "100%",
+                        height: "100%",
+                        border: 0,
+                        zIndex: 2,
+                      }}
                     />
                   </div>
                 </div>
